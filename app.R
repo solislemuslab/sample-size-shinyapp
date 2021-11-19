@@ -170,19 +170,24 @@ server <- function(input, output, session) {
   
   #plot reactive binomial n
   output$plotbin = renderPlot({
-    success = 0:(n_bin_reactive())
-    prob1 = dbinom((0:n_bin_reactive()), n_bin_reactive(), input$p1)
+    success = 0:(floor(n_bin_reactive()))
+    prob1 = dbinom((0:floor(n_bin_reactive())), floor(n_bin_reactive()), input$p1)
     data_bin = data.frame(success, prob1)
+    success2 = 0:(floor((input$k) * (n_bin_reactive())))
+    prob2 = dbinom((0:floor((input$k) * n_bin_reactive())), floor((input$k) * n_bin_reactive()), input$p2)
+    data_bin2 = data.frame(success2, prob2)
     big_norm_data2 = data.frame(big = 1:1000000, bignormvalues1 = rnorm(1000000, (n_bin_reactive())*(input$p1), (n_bin_reactive())*(input$p1)*(1-input$p1)), bignormvalues2 =  rnorm(1000000, ((input$k)*(n_bin_reactive())*(input$p2)), (input$k)*(n_bin_reactive())*(input$p2)*(1-input$p2)))
-    ggplot(,) +   
-      #geom_col(aes(x=factor(data_bin$success), y=prob1))  +                 
+    
+    ggplot(,  geom = 'blank') +   
       geom_line(aes(x = big_norm_data2$bignormvalues1, y = ..density.., color = 'Group 1', col = "#1B9E77"), stat = 'density') +    
-      geom_line(aes(x = big_norm_data2$bignormvalues2, y = ..density.., color = 'Group 2', col = "#1B9E77"), stat = 'density') +
+      geom_line(aes(x = big_norm_data2$bignormvalues2, y = ..density.., color = 'Group 2', col = "#D95F02"), stat = 'density') +
+      geom_col(aes(x=factor(data_bin$success), y=prob1,  alpha = 0.4, fill = "#1B9E77", col = "#1B9E77"))  +   
+      geom_col(aes(x=factor(data_bin2$success2), y=prob2,  alpha = 0.4, fill = "#D95F02", col = "#D95F02"))  +
       xlab("Values") + 
       ylab("Frequency") +
       theme(panel.background = element_rect(fill = "transparent"),
             plot.background = element_rect(fill = "transparent", color = NA)) +
-      labs(colour = "Population", title = "Two Histograms of Two Proportions Based on Sample Size with Normal Densities Overlayed")
+      labs(colour = "Population", title = "Two Histograms of Two Proportions Based on Sample Size with Normal Densities Overlayed") 
     
   })
   
