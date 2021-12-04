@@ -31,14 +31,18 @@ ui <- fluidPage(
                         column(6,
                                numericInput("mu2", "Mean 2", value = 127.44, min = 0,step = 0.001),
                                numericInput("s2", "Standard Deviation 2", value = 18.23, min = 0, step = 0.001))),
-                      numericInput("alpha", label = paste(greeks("alpha"), " (Significance Level)"), value = 0.05, min = 0.001, max = 0.05, step = 0.001),
-                      numericInput("power", label = paste("1-", greeks("beta"), " (Power)"), value = 0.8, min = 0.001, max = .999, step = 0.001)),
+                               numericInput("alpha", label = paste(greeks("alpha"), " (Significance Level)"), value = 0.05, min = 0.001, max = 0.05, step = 0.001),
+                               numericInput("power", label = paste("1-", greeks("beta"), " (Power)"), value = 0.8, min = 0.001, max = .999, step = 0.001),
+                               actionButton("calculate", "Calculate")),
+                     
                
                column(8, 
                       #output normal plot
                       plotOutput("plotnorm"),
                       #output sample size n
-                      textOutput("n_norm"))
+                      textOutput("n_norm")),
+              
+               
              )
     ),
     #sample size for binomial proportions
@@ -51,8 +55,8 @@ ui <- fluidPage(
              br(),
              fluidRow(
                column(4,
-                      numericInput("p1", label = "Proportion 1", value = 0.015, min = 0, max = 1, step = 0.001),
-                      numericInput("p2", label = "Proportion 2", value = 0.012, min = 0, max = 1, step = 0.001),
+                      numericInput("p1", label = "Proportion 1", value = 0.15, min = 0, max = 1, step = 0.001),
+                      numericInput("p2", label = "Proportion 2", value = 0.12, min = 0, max = 1, step = 0.001),
                       numericInput("k", label = "k", value = 1, min = 1, step = 0.25),
                       numericInput("alpha_bin", label = paste(greeks("alpha"), " (Significance Level)"), value = 0.05, min = 0.001, max = 0.05, step = 0.001),
                       numericInput("power_bin", label = paste("1-", greeks("beta"), " (Power)"), value = 0.8, min = 0.001, max = 0.999, step = 0.001)),
@@ -111,10 +115,10 @@ server <- function(input, output, session) {
   })
   
   #reactive normal n
-  n_norm_reactive = reactive({
+  n_norm_reactive = eventReactive(input$calculate, {
     zalpha = qnorm(1-input$alpha/2,0,1)
     zbeta = qnorm(input$power,0,1)
-    n_norm_reactive = ((input$s1*input$s1 + input$s2*input$s2)*(zalpha+zbeta)^2)/(input$mu2-input$mu1)^2
+    n_norm_reactive = (((input$s1*input$s1 + input$s2*input$s2)*(zalpha+zbeta)^2)/(input$mu2-input$mu1)^2)
     n_norm_reactive
   })
   
@@ -179,10 +183,11 @@ server <- function(input, output, session) {
     big_norm_data2 = data.frame(big = 1:1000000, bignormvalues1 = rnorm(1000000, (n_bin_reactive())*(input$p1), (n_bin_reactive())*(input$p1)*(1-input$p1)), bignormvalues2 =  rnorm(1000000, ((input$k)*(n_bin_reactive())*(input$p2)), (input$k)*(n_bin_reactive())*(input$p2)*(1-input$p2)))
     
     ggplot(,  geom = 'blank') +   
-      geom_line(aes(x = big_norm_data2$bignormvalues1, y = ..density.., color = 'Group 1', col = "#1B9E77"), stat = 'density') +    
-      geom_line(aes(x = big_norm_data2$bignormvalues2, y = ..density.., color = 'Group 2', col = "#D95F02"), stat = 'density') +
-      geom_col(aes(x=factor(data_bin$success), y=prob1,  alpha = 0.4, fill = "#1B9E77", col = "#1B9E77"))  +   
-      geom_col(aes(x=factor(data_bin2$success2), y=prob2,  alpha = 0.4, fill = "#D95F02", col = "#D95F02"))  +
+      geom_line(aes(x = floor(big_norm_data2$bignormvalues1), y = ..density.., color = 'Group 1', col = "#1B9E77"), stat = 'density') +    
+      geom_line(aes(x = floor(big_norm_data2$bignormvalues2), y = ..density.., color = 'Group 2', col = "#D95F02"), stat = 'density') +
+      geom_histogram(aes(y=data_bin$prob1),  alpha = 0.4, fill = "#1B9E77", col = "#1B9E77")  + 
+     # geom_col(aes(x=factor(data_bin2$success2), y=prob2,  alpha = 0.4, fill = "#D95F02", col = "#D95F02"))  +
+      xlim(0,floor(n_bin_reactive()/2)) +
       xlab("Values") + 
       ylab("Frequency") +
       theme(panel.background = element_rect(fill = "transparent"),
