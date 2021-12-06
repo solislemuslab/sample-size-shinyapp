@@ -108,8 +108,8 @@ server <- function(input, output, session) {
   
   #normal description
   output$mean_description = renderText({
-    "This tab calculates the sample size for the equality of the means for two normally distributed 
-    samples of equal size. Input values under mean, standard deviation, significance level,
+    "This tab calculates the sample size for the test of equality of means for two normally distributed 
+    populations. Both samples are assumed to have the same size. The user needs to specify the following input values: mean and standard deviation for each population, significance level,
     and power to calculate the necessary sample size."
   })
   
@@ -141,7 +141,7 @@ server <- function(input, output, session) {
       ylab("Frequency") +
       theme(panel.background = element_rect(fill = "transparent"),
             plot.background = element_rect(fill = "transparent", color = NA))+
-      labs(colour = "Population", title = "Two Histograms of Two Graphs Based on Sample Size with Normal Densities Overlayed")
+      labs(colour = "Population", title = "Histograms for the Two Samples Based on Sample Size with Normal Densities Overlayed")
       v$text = "Bar"
 
   })
@@ -153,8 +153,8 @@ server <- function(input, output, session) {
   
   #binomial description
   output$bin_description = renderText({
-    "This tab calculates the sample sizes needed to compare two binomial proportions using a two-sided
-      test where the Group 2 sample is k times as large as the Group 1 sample and the samples are independent. Input values under the proportions, k,
+    "This tab calculates the sample size for the two-sided test of equality of proportions for two Binomial 
+    populations where the the sample size of Group 2 k times as large as the sample size of Group 1. The user needs to specify the following input values: expected proportions for each population, k,
       significance level, and power to calculate the necessary sample sizes."
   })
   
@@ -203,7 +203,7 @@ server <- function(input, output, session) {
       ylab("Frequency") +
       theme(panel.background = element_rect(fill = "transparent"),
             plot.background = element_rect(fill = "transparent", color = NA)) +
-      labs(colour = "Population", title = "Two Histograms of Two Proportions Based on Sample Size with Normal Densities Overlayed") 
+      labs(colour = "Population", title = "Histograms of the Two Samples based on Sample Size with Normal Densities (used to approximate) Overlayed") 
     
   })
   
