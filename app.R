@@ -33,7 +33,8 @@ ui <- fluidPage(
                                numericInput("s2", "Standard Deviation 2", value = 18.23, min = 0, step = 0.001))),
                                numericInput("alpha", label = paste(greeks("alpha"), " (Significance Level)"), value = 0.05, min = 0.001, max = 0.05, step = 0.001),
                                numericInput("power", label = paste("1-", greeks("beta"), " (Power)"), value = 0.8, min = 0.001, max = .999, step = 0.001),
-                               actionButton("calculate", "Calculate")),
+                      actionButton("calculate", "Calculate")
+                      ),
                      
                
                column(8, 
@@ -42,9 +43,8 @@ ui <- fluidPage(
                       #output sample size n
                       textOutput("n_norm")),
               
-               
              )
-    ),
+             ),
     #sample size for binomial proportions
     tabPanel("Two Binomial Distributions",
              titlePanel("Sample Size for Comparing Two Binomial Proportions"),
@@ -82,8 +82,9 @@ ui <- fluidPage(
              fluidRow(
                column(3, 
                       numericInput("hr", "Hazard Ratio", value = 0.7, min = 0, max = 1),
-                      numericInput("surv_k", "k", value = 1, min = 0)),
-               column(3,
+                      numericInput("surv_k", "k", value = 1, min = 0),
+                      actionButton("calculate_surv", "Calculate")),
+               column(4,
                       numericInput("pT", "Proportion Participants in Treatment", value = 0.3707, min = 0, max = 1),
                       numericInput("pC", "Proportion Participants in Control", value = 0.4890, min = 0, max = 1)),
                column(4,
@@ -100,6 +101,10 @@ ui <- fluidPage(
   )
 )
 server <- function(input, output, session) {
+  
+  v <- reactiveValues(data = iris,
+                      plotnorm = NULL,
+                      text = NULL)
   
   #normal description
   output$mean_description = renderText({
@@ -123,11 +128,11 @@ server <- function(input, output, session) {
   })
   
   #plot reactive normal n
-  output$plotnorm = renderPlot({
+  observeEvent(input$calculate, {
     norm_data = data.frame(1:(n_norm_reactive()), rnorm(n_norm_reactive(), input$mu1, input$s1), rnorm(n_norm_reactive(), input$mu2, input$s2))
     big_norm_data = data.frame(big = 1:1000000, bignormvalues1 = rnorm(1000000, input$mu1, input$s1), bignormvalues2 = rnorm(1000000, input$mu2, input$s2))
     colnames(norm_data) = c("subjects", "normvalues1", "normvalues2")
-    ggplot(, geom = 'blank') +   
+    v$plot = ggplot(, geom = 'blank') +   
       geom_line(aes(x = big_norm_data$bignormvalues1, y = ..density.., color = 'Population 1', col = "#1B9E77"), stat = 'density') +  
       geom_line(aes(x = big_norm_data$bignormvalues2, y = ..density.., color = 'Population 2', col = "#D95F02"), stat = 'density') +
       geom_histogram(aes(x = norm_data$normvalues1, y = ..density..), alpha = 0.4,fill = "#1B9E77", col = "#1B9E77") +    
@@ -137,7 +142,13 @@ server <- function(input, output, session) {
       theme(panel.background = element_rect(fill = "transparent"),
             plot.background = element_rect(fill = "transparent", color = NA))+
       labs(colour = "Population", title = "Two Histograms of Two Graphs Based on Sample Size with Normal Densities Overlayed")
-    
+      v$text = "Bar"
+
+  })
+  
+  output$plotnorm = renderPlot({
+    if(is.null(v$plot)) return()
+    v$plot
   })
   
   #binomial description
@@ -205,7 +216,7 @@ server <- function(input, output, session) {
   })
   
   #survival n output
-  output$n_survival = renderText({
+  output$n_survival =  eventReactive(input$calculate_surv,{
     zalpha = qnorm(1-input$surv_alpha/2,0,1)
     zbeta = qnorm(input$surv_power,0,1)
     m = (1/input$surv_k)*((input$k*input$hr+1)/(input$hr-1))^2*(zalpha+zbeta)^2
