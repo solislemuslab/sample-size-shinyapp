@@ -217,14 +217,15 @@ server <- function(input, output, session) {
     success2 = 0:(floor((input$k) * (n_bin_reactive())))
     prob2 = dbinom((0:floor((input$k) * n_bin_reactive())), floor((input$k) * n_bin_reactive()), input$p2)
     data_bin2 = data.frame(success2, prob2)
-    big_norm_data2 = data.frame(big = 1:1000000, bignormvalues1 = rnorm(1000000, 1000000*(input$p1), 1000000*(input$p1)*(1-input$p1)), bignormvalues2 =  rnorm(1000000, ((input$k)*1000000*(input$p2)), (input$k)*1000000*(input$p2)*(1-input$p2)))
+    big_norm_data2 = data.frame(bignormvalues1 = rnorm(1000000, floor(n_bin_reactive())*(input$p1), sqrt(floor(n_bin_reactive()*(input$p1)*(1-input$p1)))), 
+                                bignormvalues2 =  rnorm(1000000, (floor(n_bin_reactive())*(input$p2)), sqrt(floor(n_bin_reactive())*(input$p2)*(1-input$p2))))
     
     ggplot(,  geom = 'blank') +   
       geom_line(aes(x = (big_norm_data2$bignormvalues1), y = ..density..), col = "#1B9E77", stat = 'density') +    
       geom_line(aes(x = (big_norm_data2$bignormvalues2), y = ..density..), col = "#D95F02", stat = 'density') +
       geom_col(aes(x = data_bin$success, y=data_bin$prob1),  alpha = 0.4, fill = "#1B9E77", col = "#1B9E77")  + 
       geom_col(aes(x = data_bin2$success2, y=data_bin2$prob2,  alpha = 0.4, fill = "#D95F02", col = "#D95F02"))  +
-      xlim(0,(n_bin_reactive()/2)) +
+      #xlim(n_bin_reactive()/15,(n_bin_reactive()/4)) +
       xlab("Values") + 
       ylab("Frequency") +
       theme(panel.background = element_rect(fill = "transparent"),
