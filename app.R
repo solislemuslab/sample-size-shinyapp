@@ -14,6 +14,16 @@ ui <- fluidPage(
   theme = bslib::bs_theme(bootswatch = "flatly"),
   
   tabsetPanel(
+    #welcome!
+    tabPanel("Home",
+             titlePanel("Welcome"),
+             fluidRow(
+               column(10,
+               textOutput("welcome_description")
+               )
+             )
+             ),
+    
     #sample size for equality of means
     tabPanel("Equality of Means",
              titlePanel("Sample Size for Equality of Means"),
@@ -45,6 +55,7 @@ ui <- fluidPage(
               
              )
              ),
+    
     #sample size for binomial proportions
     tabPanel("Two Binomial Distributions",
              titlePanel("Sample Size for Comparing Two Binomial Proportions"),
@@ -97,7 +108,16 @@ ui <- fluidPage(
              fluidRow(
                column(8, textOutput("n_survival"))
              )
-    )
+    ),
+    #welcome!
+    tabPanel("Help",
+             titlePanel("Help"),
+             fluidRow(
+               column(10,
+                      textOutput("help_description")
+               )
+             )
+    ),
   )
 )
 server <- function(input, output, session) {
@@ -105,6 +125,12 @@ server <- function(input, output, session) {
   v <- reactiveValues(data = iris,
                       plotnorm = NULL,
                       text = NULL)
+  
+  #welcome description
+  output$welcome_description = renderText({
+    "Welcome to the Sample Size Shiny App! Using respective tabs located at the top of the page, you can calculate
+    the necessary sample size for equality of means, binomial proportions, and survival curves."
+  })
   
   #normal description
   output$mean_description = renderText({
@@ -191,18 +217,19 @@ server <- function(input, output, session) {
     success2 = 0:(floor((input$k) * (n_bin_reactive())))
     prob2 = dbinom((0:floor((input$k) * n_bin_reactive())), floor((input$k) * n_bin_reactive()), input$p2)
     data_bin2 = data.frame(success2, prob2)
-    big_norm_data2 = data.frame(big = 1:1000000, bignormvalues1 = rnorm(1000000, (n_bin_reactive())*(input$p1), (n_bin_reactive())*(input$p1)*(1-input$p1)), bignormvalues2 =  rnorm(1000000, ((input$k)*(n_bin_reactive())*(input$p2)), (input$k)*(n_bin_reactive())*(input$p2)*(1-input$p2)))
+    big_norm_data2 = data.frame(big = 1:1000000, bignormvalues1 = rnorm(1000000, 1000000*(input$p1), 1000000*(input$p1)*(1-input$p1)), bignormvalues2 =  rnorm(1000000, ((input$k)*1000000*(input$p2)), (input$k)*1000000*(input$p2)*(1-input$p2)))
     
     ggplot(,  geom = 'blank') +   
-      geom_line(aes(x = floor(big_norm_data2$bignormvalues1), y = ..density.., color = 'Group 1', col = "#1B9E77"), stat = 'density') +    
-      geom_line(aes(x = floor(big_norm_data2$bignormvalues2), y = ..density.., color = 'Group 2', col = "#D95F02"), stat = 'density') +
-      geom_histogram(aes(y=data_bin$prob1),  alpha = 0.4, fill = "#1B9E77", col = "#1B9E77")  + 
-     # geom_col(aes(x=factor(data_bin2$success2), y=prob2,  alpha = 0.4, fill = "#D95F02", col = "#D95F02"))  +
-      xlim(0,floor(n_bin_reactive()/2)) +
+      geom_line(aes(x = (big_norm_data2$bignormvalues1), y = ..density..), col = "#1B9E77", stat = 'density') +    
+      geom_line(aes(x = (big_norm_data2$bignormvalues2), y = ..density..), col = "#D95F02", stat = 'density') +
+      geom_col(aes(x = data_bin$success, y=data_bin$prob1),  alpha = 0.4, fill = "#1B9E77", col = "#1B9E77")  + 
+      geom_col(aes(x = data_bin2$success2, y=data_bin2$prob2,  alpha = 0.4, fill = "#D95F02", col = "#D95F02"))  +
+      xlim(0,(n_bin_reactive()/2)) +
       xlab("Values") + 
       ylab("Frequency") +
       theme(panel.background = element_rect(fill = "transparent"),
-            plot.background = element_rect(fill = "transparent", color = NA)) +
+            plot.background = element_rect(fill = "transparent", color = NA),
+            legend.position = "none") +
       labs(colour = "Population", title = "Histograms of the Two Samples based on Sample Size with Normal Densities (used to approximate) Overlayed") 
     
   })
@@ -222,6 +249,11 @@ server <- function(input, output, session) {
     m = (1/input$surv_k)*((input$k*input$hr+1)/(input$hr-1))^2*(zalpha+zbeta)^2
     n_survival = m/(input$surv_k*input$pT + input$pC)
     paste("Sample Size: ", n_survival)
+  })
+  
+  #help description
+  output$help_description = renderText({
+    "Some Helpful Tips. Do not enter values less than or equal to zero."
   })
   
 }
