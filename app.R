@@ -70,8 +70,9 @@ ui <- fluidPage(
                       numericInput("p2", label = "Proportion 2", value = 0.12, min = 0, max = 1, step = 0.001),
                       numericInput("k", label = "k", value = 1, min = 1, step = 0.25),
                       numericInput("alpha_bin", label = paste(greeks("alpha"), " (Significance Level)"), value = 0.05, min = 0.001, max = 0.05, step = 0.001),
-                      numericInput("power_bin", label = paste("1-", greeks("beta"), " (Power)"), value = 0.8, min = 0.001, max = 0.999, step = 0.001)),
-               
+                      numericInput("power_bin", label = paste("1-", greeks("beta"), " (Power)"), value = 0.8, min = 0.001, max = 0.999, step = 0.001),
+                      actionButton("calculate_bin", "Calculate")
+             ),
                column(8, 
                       #output bin plot
                       plotOutput("plotbin"),
@@ -126,6 +127,10 @@ server <- function(input, output, session) {
                       plotnorm = NULL,
                       text = NULL)
   
+  vbin <- reactiveValues(data = iris,
+                      plotbin = NULL,
+                      text = NULL)
+  
   #welcome description
   output$welcome_description = renderText({
     "Welcome to the Sample Size Shiny App! Using respective tabs located at the top of the page, you can calculate
@@ -158,7 +163,7 @@ server <- function(input, output, session) {
     norm_data = data.frame(1:(n_norm_reactive()), rnorm(n_norm_reactive(), input$mu1, input$s1), rnorm(n_norm_reactive(), input$mu2, input$s2))
     big_norm_data = data.frame(big = 1:1000000, bignormvalues1 = rnorm(1000000, input$mu1, input$s1), bignormvalues2 = rnorm(1000000, input$mu2, input$s2))
     colnames(norm_data) = c("subjects", "normvalues1", "normvalues2")
-    v$plot = ggplot(, geom = 'blank') +   
+    v$plotnorm = ggplot(, geom = 'blank') +   
       geom_line(aes(x = big_norm_data$bignormvalues1, y = ..density.., color = 'Population 1', col = "#1B9E77"), stat = 'density') +  
       geom_line(aes(x = big_norm_data$bignormvalues2, y = ..density.., color = 'Population 2', col = "#D95F02"), stat = 'density') +
       geom_histogram(aes(x = norm_data$normvalues1, y = ..density..), alpha = 0.4,fill = "#1B9E77", col = "#1B9E77") +    
@@ -197,7 +202,7 @@ server <- function(input, output, session) {
   })
   
   #reactive binomial n
-  n_bin_reactive = reactive({
+  n_bin_reactive = eventReactive(input$calculate_bin,{
     q1 = 1-input$p1
     q2 = 1-input$p2
     zalpha = qnorm(1-input$alpha_bin/2,0,1)
@@ -209,8 +214,13 @@ server <- function(input, output, session) {
     n_bin_reactive
   })
   
-  #plot reactive binomial n
   output$plotbin = renderPlot({
+    if(is.null(vbin$plotbin)) return()
+    vbin$plotbin
+  })
+  
+  #plot reactive binomial n
+  observeEvent(input$calculate_bin, {
     success = 0:(floor(n_bin_reactive()))
     prob1 = dbinom((0:floor(n_bin_reactive())), floor(n_bin_reactive()), input$p1)
     data_bin = data.frame(success, prob1)
@@ -220,19 +230,18 @@ server <- function(input, output, session) {
     big_norm_data2 = data.frame(bignormvalues1 = rnorm(1000000, floor(n_bin_reactive())*(input$p1), sqrt(floor(n_bin_reactive()*(input$p1)*(1-input$p1)))), 
                                 bignormvalues2 =  rnorm(1000000, (floor(n_bin_reactive())*(input$p2)), sqrt(floor(n_bin_reactive())*(input$p2)*(1-input$p2))))
     
-    ggplot(,  geom = 'blank') +   
+    vbin$plotbin = ggplot(,  geom = 'blank') +   
       geom_line(aes(x = (big_norm_data2$bignormvalues1), y = ..density..), col = "#1B9E77", stat = 'density') +    
       geom_line(aes(x = (big_norm_data2$bignormvalues2), y = ..density..), col = "#D95F02", stat = 'density') +
       geom_col(aes(x = data_bin$success, y=data_bin$prob1),  alpha = 0.4, fill = "#1B9E77", col = "#1B9E77")  + 
       geom_col(aes(x = data_bin2$success2, y=data_bin2$prob2,  alpha = 0.4, fill = "#D95F02", col = "#D95F02"))  +
-      #xlim(n_bin_reactive()/15,(n_bin_reactive()/4)) +
       xlab("Values") + 
       ylab("Frequency") +
       theme(panel.background = element_rect(fill = "transparent"),
             plot.background = element_rect(fill = "transparent", color = NA),
             legend.position = "none") +
       labs(colour = "Population", title = "Histograms of the Two Samples based on Sample Size with Normal Densities (used to approximate) Overlayed") 
-    
+      vbin$text = "Bar"
   })
   
   #survival description
