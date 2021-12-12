@@ -11,7 +11,7 @@ More details are available in the documentation: [DOCS.md](https://github.com/so
 
 
 # Source Code
-WI Fast Stats is an [open source](http://opensource.org) project, and the source code is available at in this repository with the following structure:
+Sample size shinyapp is an [open source](http://opensource.org) project, and the source code is available at in this repository with the following structure:
 
 - xxxx
 
@@ -30,18 +30,11 @@ Users with strong programming skills might like to modify the existing R code an
 ```r
 list.of.packages <- c(
   "shiny", 
-  "shinydashboard", 
-  "shinyjs", 
-  "plotly", 
-  "data.table", 
   "ggplot2", 
-  "RColorBrewer", 
-  "car", 
-  "pracma", 
-  "ggplotify", 
-  "thatssorandom", 
-  "viridis",
-  "rsconnect")
+  "bslib",
+  "DT",
+  "tidyverse",
+  "greekLetters")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[, "Package"])]
 if(length(new.packages)) install.packages(new.packages)
 ```
