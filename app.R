@@ -4,9 +4,6 @@ library(thematic)
 library(DT)
 library(shiny)
 library(tidyverse)
-library(RColorBrewer)
-library(ggfortify)
-library(survival)
 library(greekLetters)
 
 
@@ -21,6 +18,11 @@ ui <- fluidPage(
                column(10,
                textOutput("welcome_description")
                )
+             ),
+             br(),
+             fluidRow(
+               column(10,
+                      htmlOutput("welcome_info"))
              )
              ),
     
@@ -117,6 +119,11 @@ ui <- fluidPage(
                column(10,
                       textOutput("help_description")
                )
+             ),
+             br(),
+             fluidRow(
+               column(10,
+                      htmlOutput('FAQ'))
              )
     ),
   )
@@ -136,6 +143,14 @@ server <- function(input, output, session) {
     "Welcome to the Sample Size Shiny App! Using respective tabs located at the top of the page, you can calculate
     the necessary sample size for equality of means, binomial proportions, and survival curves."
   })
+
+    output$welcome_info = renderUI({HTML(paste(
+      "To learn more about sample size calculations, visit these links:",
+      "Hypothesis testing: https://www.youtube.com/watch?v=0oc49DyA3hU",
+      "Statistical power: https://www.youtube.com/watch?v=Rsc5znwR5FA",
+      "Sample size: https://www.youtube.com/watch?v=67zCIqdeXpo",
+      "P-hacking and power calculations: https://www.youtube.com/watch?v=UFhJefdVCjE", sep="<br/>")
+  )})
   
   #normal description
   output$mean_description = renderText({
@@ -178,8 +193,8 @@ server <- function(input, output, session) {
   })
   
   output$plotnorm = renderPlot({
-    if(is.null(v$plot)) return()
-    v$plot
+    if(is.null(v$plotnorm)) return()
+    v$plotnorm
   })
   
   #binomial description
@@ -257,13 +272,25 @@ server <- function(input, output, session) {
     zalpha = qnorm(1-input$surv_alpha/2,0,1)
     zbeta = qnorm(input$surv_power,0,1)
     m = (1/input$surv_k)*((input$k*input$hr+1)/(input$hr-1))^2*(zalpha+zbeta)^2
-    n_survival = m/(input$surv_k*input$pT + input$pC)
+    n_survival = round(m/(input$surv_k*input$pT + input$pC),3)
     paste("Sample Size: ", n_survival)
   })
   
   #help description
   output$help_description = renderText({
-    "Some Helpful Tips. Do not enter values less than or equal to zero."
+    "Some Helpful Tips."
+  })
+  
+  #help FAQ
+  output$FAQ = renderUI({HTML(paste(
+    "Frequently Asked Questions",
+    "Q: How to get help?",
+    "A: You should contact the lab: https://solislemuslab.github.io//pages/people.html",
+    "Q: I found a bug or error in the code, how can I report it?",
+    "A: You should contact the lab: https://solislemuslab.github.io//pages/people.html",
+    "Q: How can I contribute?",
+    "A: Visit https://github.com/solislemuslab/sample-size-shinyapp/blob/master/CONTRIBUTING.md for instructions.",
+    sep="<br/>"))
   })
   
 }
