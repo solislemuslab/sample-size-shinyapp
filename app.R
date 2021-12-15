@@ -5,6 +5,7 @@ library(DT)
 library(shiny)
 library(tidyverse)
 library(greekLetters)
+library(shinyhelper)
 
 
 ui <- fluidPage(
@@ -45,7 +46,9 @@ ui <- fluidPage(
                                numericInput("s2", "Standard Deviation 2", value = 18.23, min = 0, step = 0.001))),
                                numericInput("alpha", label = paste(greeks("alpha"), " (Significance Level)"), value = 0.05, min = 0.001, max = 0.05, step = 0.001),
                                numericInput("power", label = paste("1-", greeks("beta"), " (Power)"), value = 0.8, min = 0.001, max = .999, step = 0.001),
-                      actionButton("calculate", "Calculate")
+                      helper(shiny:: actionButton('calculate',"Calculate"), title = '', icon = "question-circle", type = "inline",
+                             content = "Values entered must be greater than 0 and within the specified range."
+                             ),
                       ),
                      
                
@@ -73,7 +76,9 @@ ui <- fluidPage(
                       numericInput("k", label = "k", value = 1, min = 1, step = 0.25),
                       numericInput("alpha_bin", label = paste(greeks("alpha"), " (Significance Level)"), value = 0.05, min = 0.001, max = 0.05, step = 0.001),
                       numericInput("power_bin", label = paste("1-", greeks("beta"), " (Power)"), value = 0.8, min = 0.001, max = 0.999, step = 0.001),
-                      actionButton("calculate_bin", "Calculate")
+                      helper(shiny:: actionButton('calculate_bin',"Calculate"), title = '', icon = "question-circle", type = "inline",
+                             content = "Values entered must be greater than 0 and within the specified range."
+                      ),
              ),
                column(8, 
                       #output bin plot
@@ -97,7 +102,9 @@ ui <- fluidPage(
                column(3, 
                       numericInput("hr", "Hazard Ratio", value = 0.7, min = 0, max = 1),
                       numericInput("surv_k", "k", value = 1, min = 0),
-                      actionButton("calculate_surv", "Calculate")),
+                      helper(shiny:: actionButton('calculate_surv',"Calculate"), title = '', icon = "question-circle", type = "inline",
+                             content = "Values entered must be greater than 0 and within the specified range."
+                      )),
                column(4,
                       numericInput("pT", "Proportion Participants in Treatment", value = 0.3707, min = 0, max = 1),
                       numericInput("pC", "Proportion Participants in Control", value = 0.4890, min = 0, max = 1)),
@@ -292,6 +299,9 @@ server <- function(input, output, session) {
     "A: Visit https://github.com/solislemuslab/sample-size-shinyapp/blob/master/CONTRIBUTING.md for instructions.",
     sep="<br/>"))
   })
+  
+  addTooltip(session = session, id = "calculate", title = "Values entered must be greater than 0 and within the specified range."
+)
   
 }
 shinyApp(ui = ui, server = server)
