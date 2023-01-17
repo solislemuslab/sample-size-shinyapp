@@ -1,12 +1,6 @@
 # Contributing to the Sample-Size shinyapp
 The following guidelines are designed for contributors to the sample size shinyapp.
 
-## Folder Structure 
-```
-xxx 
-```
-
-
 ## Reporting Issues
 
 For reporting a bug or a failed function or requesting a new feature, you can simply open an issue in the [issue tracker](https://github.com/solislemuslab/sample-size-shinyapp/issues). If you are reporting a bug, please also include a minimal code example or all relevant information for us to replicate the issue.

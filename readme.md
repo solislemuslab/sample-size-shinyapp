@@ -11,9 +11,7 @@ More details are available in the documentation: [DOCS.md](https://github.com/so
 
 
 # Source Code
-Sample size shinyapp is an [open source](http://opensource.org) project, and the source code is available at in this repository with the following structure:
-
-- xxxx
+Sample size shinyapp is an [open source](http://opensource.org) project, and the source code is available at in this repository with the main web app code in `app.R`.
 
 
 ### Running the web apps locally
@@ -34,7 +32,10 @@ list.of.packages <- c(
   "bslib",
   "DT",
   "tidyverse",
-  "greekLetters")
+  "greekLetters",
+  "thematic",
+  "shinyhelper",
+  "shinyBS")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[, "Package"])]
 if(length(new.packages)) install.packages(new.packages)
 ```
@@ -54,7 +55,7 @@ The sample size shiny app is licensed under the [MIT](https://opensource.org/lic
 
 # Feedback, issues and questions
 
-- Issues reports are encouraged through the [GitHub issue tracker](https://github.com/solislemuslab/sample-size-shinyapp/issues)
+Issues reports are encouraged through the [GitHub issue tracker](https://github.com/solislemuslab/sample-size-shinyapp/issues)
 
 
 

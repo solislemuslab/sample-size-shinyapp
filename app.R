@@ -6,6 +6,7 @@ library(shiny)
 library(tidyverse)
 library(greekLetters)
 library(shinyhelper)
+library(shinyBS)
 
 
 ui <- fluidPage(
@@ -14,7 +15,7 @@ ui <- fluidPage(
   tabsetPanel(
     #welcome!
     tabPanel("Home",
-             titlePanel("Welcome"),
+             titlePanel("Welcome!"),
              fluidRow(
                column(10,
                textOutput("welcome_description")
@@ -29,7 +30,7 @@ ui <- fluidPage(
     
     #sample size for equality of means
     tabPanel("Equality of Means",
-             titlePanel("Sample Size for Equality of Means"),
+             titlePanel("Sample Size for Pairwise Test of Equality of Means"),
              fluidRow(
                column(10,
                       textOutput("mean_description")
@@ -62,8 +63,8 @@ ui <- fluidPage(
              ),
     
     #sample size for binomial proportions
-    tabPanel("Two Binomial Distributions",
-             titlePanel("Sample Size for Comparing Two Binomial Proportions"),
+    tabPanel("Binomial Proportions",
+             titlePanel("Sample Size for Pairwise Test of Two Binomial Proportions"),
              fluidRow(
                column(10,
                       textOutput("bin_description"),
@@ -121,7 +122,7 @@ ui <- fluidPage(
     ),
     #welcome!
     tabPanel("Help",
-             titlePanel("Help"),
+             titlePanel("Frequently asked questions"),
              fluidRow(
                column(10,
                       textOutput("help_description")
@@ -133,6 +134,10 @@ ui <- fluidPage(
                       htmlOutput('FAQ'))
              )
     ),
+  ),
+  div(
+    class = "footer",
+    includeHTML("footer.html")
   )
 )
 server <- function(input, output, session) {
@@ -147,23 +152,23 @@ server <- function(input, output, session) {
   
   #welcome description
   output$welcome_description = renderText({
-    "Welcome to the Sample Size Shiny App! Using respective tabs located at the top of the page, you can calculate
-    the necessary sample size for equality of means, binomial proportions, and survival curves."
+    "Welcome to the Sample Size Calculation Shiny App! Using the tabs located at the top of the page, you can calculate
+    the necessary sample size for pairwise test of equality of means, pairwise test of binomial proportions, and pairwise test of survival curves."
   })
 
     output$welcome_info = renderUI({HTML(paste(
-      "To learn more about sample size calculations, visit these links:",
-      "Hypothesis testing: https://www.youtube.com/watch?v=0oc49DyA3hU",
-      "Statistical power: https://www.youtube.com/watch?v=Rsc5znwR5FA",
-      "Sample size: https://www.youtube.com/watch?v=67zCIqdeXpo",
-      "P-hacking and power calculations: https://www.youtube.com/watch?v=UFhJefdVCjE", sep="<br/>")
+      "To learn more about sample size calculations, visit these YouTube videos:",
+      a("Hypothesis testing", href="https://www.youtube.com/watch?v=0oc49DyA3hU"),
+      a("Statistical power", href="https://www.youtube.com/watch?v=Rsc5znwR5FA"),
+      a("Sample size", href="https://www.youtube.com/watch?v=67zCIqdeXpo"),
+      a("P-hacking and power calculations", href="https://www.youtube.com/watch?v=UFhJefdVCjE"),"","","", sep="<br/>")
   )})
   
   #normal description
   output$mean_description = renderText({
-    "This tab calculates the sample size for the test of equality of means for two normally distributed 
-    populations. Both samples are assumed to have the same size. The user needs to specify the following input values: mean and standard deviation for each population, significance level,
-    and power to calculate the necessary sample size."
+    "Here, we calculate the sample size for the two-sided pairwise test of equality of means for two normally distributed 
+    populations. Both samples are assumed to have the same size. The user needs to specify the following input values: mean and standard deviation for each population, significance level for the test,
+    and desired power. This web app computes the sample size per group and it presents a plot with the histograms per group with a Normal density overlayed for visual comparison."
   })
   
   #normal n output
@@ -206,9 +211,9 @@ server <- function(input, output, session) {
   
   #binomial description
   output$bin_description = renderText({
-    "This tab calculates the sample size for the two-sided test of equality of proportions for two Binomial 
+    "Here, we calculate the sample size for the two-sided pairwise test of equality of proportions for two Binomial 
     populations where the the sample size of Group 2 k times as large as the sample size of Group 1. The user needs to specify the following input values: expected proportions for each population, k,
-      significance level, and power to calculate the necessary sample sizes."
+      significance level, and desired power. This web app computes the sample size per group and it presents a plot with the histograms per group with a Normal density (which is used to approximate the Binomial) overlayed for visual comparison."
   })
   
   #binomial n output
@@ -262,42 +267,44 @@ server <- function(input, output, session) {
       theme(panel.background = element_rect(fill = "transparent"),
             plot.background = element_rect(fill = "transparent", color = NA),
             legend.position = "none") +
-      labs(colour = "Population", title = "Histograms of the Two Samples based on Sample Size with Normal Densities (used to approximate) Overlayed") 
+      labs(colour = "Population", title = "Histograms of the Two Samples based on Sample Size with Normal Densities Overlayed") 
       vbin$text = "Bar"
   })
   
   #survival description
   output$surv_description = renderText({
-    "This tab calculates the sample size estimation for the comparison of survival curves
+    "Here, we calculate the sample size estimation for the comparison of survival curves
       between two groups under the Cox Proportional-Hazards Model. The ratio of participants
-      in the treatment group to control is k. Input values under hazard ratio, k, significance level,
-     and power to calculate the necessary sample size."
+      in the treatment group to control is k. The user needs to specify the following input values: hazard ratio, k, significance level,
+     and desired power."
   })
   
   #survival n output
   output$n_survival =  eventReactive(input$calculate_surv,{
     zalpha = qnorm(1-input$surv_alpha/2,0,1)
     zbeta = qnorm(input$surv_power,0,1)
-    m = (1/input$surv_k)*((input$k*input$hr+1)/(input$hr-1))^2*(zalpha+zbeta)^2
+    m = (1/input$surv_k)*((input$surv_k*input$hr+1)/(input$hr-1))^2*(zalpha+zbeta)^2
     n_survival = round(m/(input$surv_k*input$pT + input$pC),3)
     paste("Sample Size: ", n_survival)
   })
   
   #help description
   output$help_description = renderText({
-    "Some Helpful Tips."
+    ""
   })
   
   #help FAQ
   output$FAQ = renderUI({HTML(paste(
-    "Frequently Asked Questions",
-    "Q: How to get help?",
-    "A: You should contact the lab: https://solislemuslab.github.io//pages/people.html",
-    "Q: I found a bug or error in the code, how can I report it?",
-    "A: You should contact the lab: https://solislemuslab.github.io//pages/people.html",
-    "Q: How can I contribute?",
-    "A: Visit https://github.com/solislemuslab/sample-size-shinyapp/blob/master/CONTRIBUTING.md for instructions.",
-    sep="<br/>"))
+    "Q: How to get help?", "<br/>",
+    "A: You should contact the lab: ", a("https://solislemuslab.github.io//pages/people.html", href="https://solislemuslab.github.io//pages/people.html"),
+    "<br/>", "<br/>",
+    "Q: I found a bug or error in the code, how can I report it?", "<br/>",
+    "A: You should open a ",a("github issue", href="https://github.com/solislemuslab/sample-size-shinyapp/issues"), " or contact the lab.","<br/>",
+    "<br/>",
+    "Q: How can I contribute to the code?", "<br/>",
+    "A: Visit ",a("CONTRIBUTING.md", href="https://github.com/solislemuslab/sample-size-shinyapp/blob/master/CONTRIBUTING.md")," for instructions.",
+    "<br/>", "<br/>", "<br/>",
+    sep=""))
   })
   
   addTooltip(session = session, id = "calculate", title = "Values entered must be greater than 0 and within the specified range."
