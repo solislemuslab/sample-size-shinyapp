@@ -5,7 +5,7 @@ This shinyapp will calculate the sample size needed for a given power.
 # Usage
 
 - The sample size shinyapp is browser-based, and thus, no installation is needed
-- The sample size shinyapp can be accessed in this link xxxx
+- The sample size shinyapp can be accessed in this link [https://solislemus-lab.shinyapps.io/sample-size-shinyapp/](https://solislemus-lab.shinyapps.io/sample-size-shinyapp/)
 
 More details are available in the documentation: [DOCS.md](https://github.com/solislemuslab/sample-size-shinyapp/blob/master/DOCS.md)
 
